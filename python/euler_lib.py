@@ -14,8 +14,6 @@ import functools as ftools
 import operator as op
 import time
 
-from fmap import fmap
-
 
 #############################################################
 # Make some library functions available without namespacing #
