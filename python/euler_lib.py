@@ -8,7 +8,6 @@ handle conversion to concrete data structures.
 In addition, I have tried to keep everything purely functional
 wherever possible.
 '''
-from types import GeneratorType
 import itertools as itools
 import functools as ftools
 import operator as op
@@ -27,11 +26,12 @@ reduce = ftools.reduce
 #############################################################
 # Helpers for analysing the solutions themselves            #
 #############################################################
-def timed(func):
+def euler_solution(func):
     '''
     Time the execution of a function and print its result.
     '''
     def wrapped(*args, **kwargs):
+        print(func.__doc__)
         s = time.time()
         res = func(*args, **kwargs)
         print('Execution took {0:.7f} seconds'.format(time.time() - s))
@@ -90,7 +90,6 @@ def scanl(func=op.add, acc=0, col=[]):
     '''
     with_acc = itools.chain([acc], col)
     return itools.accumulate(with_acc, func)
-
 
 
 def flatten(lst):
@@ -181,7 +180,7 @@ def lazy_primes():
             #   or composite less than p.
             yield k
             sieve[k ** 2] = [k]
-        k +=1
+        k += 1
 
 
 def primes_to_n(n):
@@ -233,3 +232,25 @@ def n_digit_pals(n):
         for k in map(int, filter(no_leading_0, pals)):
             yield k
 
+
+def largest_power_of_2(n):
+    '''Find the largest power of 2 less than n along with the power'''
+    res, power = 2, 1
+    while res <= n:
+        power += 1
+        res *= 2
+    return res // 2
+
+
+def powers_of_2(n):
+    '''Find all powers of 2 less than n and their power'''
+    res, power = 2, 1
+    powers = {2: 1}
+    while True:
+        power += 1
+        res *= 2
+        if res <= n:
+            powers[res] = power
+        else:
+            break
+    return powers

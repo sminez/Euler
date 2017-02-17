@@ -3,32 +3,34 @@ Solutions to the Project Euler Problems
 ```````````````````````````````````````
 '''
 from euler_lib import *
+from euler_lib import euler_solution
 
 
 ###############################################################################
 # Values required for the problems as specified #
 #################################################
 BIG_INT_PROBLEM_8 = (
-"7316717653133062491922511967442657474235534919493496983520312774"
-"506326239578318016984801869478851843858615607891129494954595017379583"
-"319528532088055111254069874715852386305071569329096329522744304355766"
-"896648950445244523161731856403098711121722383113622298934233803081353"
-"362766142828064444866452387493035890729629049156044077239071381051585"
-"930796086670172427121883998797908792274921901699720888093776657273330"
-"010533678812202354218097512545405947522435258490771167055601360483958"
-"644670632441572215539753697817977846174064955149290862569321978468622"
-"482839722413756570560574902614079729686524145351004748216637048440319"
-"989000889524345065854122758866688116427171479924442928230863465674813"
-"919123162824586178664583591245665294765456828489128831426076900422421"
-"902267105562632111110937054421750694165896040807198403850962455444362"
-"981230987879927244284909188845801561660979191338754992005240636899125"
-"607176060588611646710940507754100225698315520005593572972571636269561"
-"882670428252483600823257530420752963450")
+    "7316717653133062491922511967442657474235534919493496983520312774"
+    "506326239578318016984801869478851843858615607891129494954595017379583"
+    "319528532088055111254069874715852386305071569329096329522744304355766"
+    "896648950445244523161731856403098711121722383113622298934233803081353"
+    "362766142828064444866452387493035890729629049156044077239071381051585"
+    "930796086670172427121883998797908792274921901699720888093776657273330"
+    "010533678812202354218097512545405947522435258490771167055601360483958"
+    "644670632441572215539753697817977846174064955149290862569321978468622"
+    "482839722413756570560574902614079729686524145351004748216637048440319"
+    "989000889524345065854122758866688116427171479924442928230863465674813"
+    "919123162824586178664583591245665294765456828489128831426076900422421"
+    "902267105562632111110937054421750694165896040807198403850962455444362"
+    "981230987879927244284909188845801561660979191338754992005240636899125"
+    "607176060588611646710940507754100225698315520005593572972571636269561"
+    "882670428252483600823257530420752963450"
+)
 
 ###############################################################################
 
 
-@timed
+@euler_solution
 def euler1(a, b, u_bound):
     '''
     Find the sum of the multiples of m and n below upper bound
@@ -40,7 +42,7 @@ def euler1(a, b, u_bound):
     return int(s)
 
 
-@timed
+@euler_solution
 def euler2(n):
     '''
     Find the sum of even valued Fibonacci numbers below n
@@ -55,7 +57,7 @@ def euler2(n):
     return fib_sum
 
 
-@timed
+@euler_solution
 def euler3(n):
     '''
     Finding the prime factors of an int is used enough that this is a
@@ -64,7 +66,7 @@ def euler3(n):
     return p_factors(n)
 
 
-@timed
+@euler_solution
 def euler4(n):
     '''
     Find the largest palendromic product of two n-digit numbers
@@ -91,7 +93,7 @@ def euler4(n):
                 return None
 
 
-@timed
+@euler_solution
 def euler5(n):
     '''
     Find the smallest number that can be divided evenly by 1..n
@@ -109,7 +111,7 @@ def euler5(n):
     return smallest
 
 
-@timed
+@euler_solution
 def euler6(n):
     '''
     Find the difference between the square of sums and sum of squares
@@ -122,13 +124,13 @@ def euler6(n):
     return square_sum - sum_square
 
 
-@timed
+@euler_solution
 def euler7(n):
     '''Return the nth prime number'''
     return nth(n, lazy_primes())
 
 
-@timed
+@euler_solution
 def euler8(l, n=None):
     '''Find the largest product of l consecutive digits in n'''
     if n:
@@ -150,7 +152,7 @@ def euler8(l, n=None):
     return largest
 
 
-@timed
+@euler_solution
 def euler9(target):
     '''
     Find a Pythagorean triple that sums to the given target and return
@@ -179,9 +181,70 @@ def euler9(target):
         return None
 
 
-@timed
+@euler_solution
 def euler10(n):
     '''
     Find the sum of the primes below n
     '''
     return sum(primes_to_n(n))
+
+
+def euler11(matrix):
+    '''
+    Find the largest product in a grid
+    '''
+    pass
+
+
+@euler_solution
+def euler12(divisors=500):
+    '''
+    Find the first triangular to have more than a target number of divisors
+    '''
+    pass
+
+
+@euler_solution
+def euler13(str_ns):
+    '''
+    Work out the first 10 digits of the sum of 100 50-digit numbers
+    '''
+    pass
+
+
+@euler_solution
+def euler14(upper_bound=int(1e6)):
+    '''
+    Find the longest Collatz sequence with a starting number under
+    `upper_bound`. Terms _can_ exceed this once the sequence starts.
+    n -> n/2    (if n is even)
+    n -> 3n + 1 (if n is odd)
+    '''
+    def step_forward(n):
+        '''Continue the chain'''
+        if n % 2 == 0:
+            return n // 2
+        else:
+            return (3 * n) + 1
+
+    n_to_len = {2: 2, 1: 1}
+
+    for num in range(3, upper_bound+1):
+        if n_to_len.get(num):
+            continue  # Filled in already
+
+        existing_chain = n_to_len.get(step_forward(num))
+        if existing_chain:
+            n_to_len[num] = existing_chain + 1
+        else:
+            chain = [num]
+            next_num = step_forward(num)
+            while next_num != 4:
+                chain.append(next_num)
+                next_num = step_forward(next_num)
+            for i, n in enumerate(reversed(chain)):
+                # 4 has a chain length of 3, Python indexing from 0
+                n_to_len[n] = i + 4
+
+    valid = ((k, v) for k, v in n_to_len.items() if k <= upper_bound)
+    return sorted(valid, key=lambda x: x[1], reverse=True)
