@@ -8,6 +8,7 @@ handle conversion to concrete data structures.
 In addition, I have tried to keep everything purely functional
 wherever possible.
 '''
+from math import factorial
 import itertools as itools
 import functools as ftools
 import operator as op
@@ -113,11 +114,16 @@ def windowed(size, col):
     current_slice = list(take(size, remaining))
 
     if len(current_slice) < size:
-        raise StopIteration
+        return
     else:
         while True:
             yield (elem for elem in current_slice)
-            next_element = next(remaining)
+
+            try:
+                next_element = next(remaining)
+            except StopIteration:
+                return
+
             if next_element:
                 # Slide the window
                 current_slice = current_slice[1:] + [next_element]
@@ -254,3 +260,10 @@ def powers_of_2(n):
         else:
             break
     return powers
+
+
+def nCr(n, r):
+    '''
+    Compute n chose r using binomial coefficients
+    '''
+    return factorial(n) / (factorial(r) * factorial(n - r))
