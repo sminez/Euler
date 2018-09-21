@@ -12,6 +12,7 @@ from math import factorial
 import itertools as itools
 import functools as ftools
 import operator as op
+import random
 import time
 
 
@@ -218,6 +219,76 @@ def p_factors(n):
     return factors
 
 
+def probably_prime(n, k=20):
+    """
+    Check n for primalty using the Miller-Rabin method
+        https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
+        http://mathworld.wolfram.com/Rabin-MillerStrongPseudoprimeTest.html
+
+    Return True if n passes k rounds of the Miller-Rabin primality test (and is
+    probably prime). Return False if n is proved to be composite.
+
+    NOTE: This is faster than generating primes >= n and checking if we are in
+          the list but it is slower at generating a list of primes than
+          using `lazy_primes`.
+    """
+    small_primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31]
+
+    # Handle simple known cases
+    if n < 2:
+        return False
+
+    # Quick & small prime sieve for known small primes
+    for p in small_primes:
+        if n < p * p:
+            return True
+
+        if n % p == 0:
+            return False
+
+    # Not sieved by the small primes so run Miller-Rabin
+
+    # Determine the values of r and s such that n == (2^r)s + 1
+    r, s = 0, n - 1
+
+    while s % 2 == 0:
+        r += 1
+        s //= 2
+
+    # Run our k iterations of the algorithm in different bases:
+    #   If a^s == 1 (mod n)
+    #   or a^2js == -1 (mod n) for some j, 0 <= j <= r-1
+    #   then n passes the test in base a.
+    #   A prime will pass in all bases. If the smallest known composite that
+    #   passes for a given base is known, then this can be used as a proof of
+    #   primality for all primes below that bound.
+    #   Using multiple tests of the first 7 primes are valid for every number
+    #   up to 3.4x10^14.
+    for _ in range(k):
+        # Select a base
+        a = random.randrange(2, n - 1)
+        x = pow(a, s, n)  # a^s (mod n)
+
+        if x == 1 or x == n - 1:
+            # We passed the first test in this base so don't bother
+            # with the second one.
+            continue
+
+        # Check for a passing value of j via repeated squaring. When we
+        # reach this point, x is already a^s (mod n).
+        for _ in range(r - 1):
+            x = pow(x, 2, n)
+            if x == n - 1:
+                break
+        else:
+            # Failed both tests so this is a composite
+            return False
+
+    # Passed both so this is _probably_ prime (known prime if we are below
+    # the threshold)
+    return True
+
+
 def n_digit_pals(n):
     '''
     Find all n-digit palindromes
@@ -267,3 +338,25 @@ def nCr(n, r):
     Compute n chose r using binomial coefficients
     '''
     return factorial(n) / (factorial(r) * factorial(n - r))
+
+
+def spiral_corners():
+    '''
+    Yield the corners of a number spiral in layers. Each layer
+    after the first contains 4 corners.
+    '''
+    n, step = 1, 1
+
+    yield [n]
+
+    while True:
+        layer = []
+
+        for i in range(4):
+            n += step * 2
+            layer.append(n)
+
+        yield layer
+
+        # New layer so increase the step size
+        step += 1

@@ -295,15 +295,6 @@ def euler27(bound=1000):
             return n**2 + a * n + b
         return q
 
-    prime_gen = lazy_primes()
-    primes = [next(prime_gen)]
-
-    def is_prime(n):
-        while primes[-1] < n:
-            primes.append(next(prime_gen))
-
-        return n in primes
-
     best = None
     best_run = []
 
@@ -322,7 +313,7 @@ def euler27(bound=1000):
                     k = func(n)
                     run = []
 
-                    while is_prime(k):
+                    while probably_prime(k):
                         run.append(k)
                         n += 1
                         k = func(n)
@@ -552,3 +543,144 @@ def euler54(fname='data/poker.txt'):
                         player_1_score += 1
 
     return player_1_score
+
+
+@euler_solution
+def euler58():
+    '''
+    Starting with 1 and spiralling anticlockwise in the following way, a square
+    spiral with side length 7 is formed.
+
+        37 36 35 34 33 32 31
+        38 17 16 15 14 13 30
+        39 18  5  4  3 12 29
+        40 19  6  1  2 11 28
+        41 20  7  8  9 10 27
+        42 21 22 23 24 25 26
+        43 44 45 46 47 48 49
+
+    It is interesting to note that the odd squares lie along the bottom right
+    diagonal, but what is more interesting is that 8 out of the 13 numbers
+    lying along both diagonals are prime; that is, a ratio of 8/13 ≈ 62%.
+
+    If one complete new layer is wrapped around the spiral above, a square
+    spiral with side length 9 will be formed. If this process is continued,
+    what is the side length of the square spiral for which the ratio of primes
+    along both diagonals first falls below 10%?
+    '''
+    primes = 0
+    total = 0
+
+    # Loop over all spiral corners
+    for layer, corners in enumerate(spiral_corners()):
+        if layer == 0:
+            total += 1
+        else:
+            total += 4
+
+            for corner in corners:
+                if probably_prime(corner):
+                    primes += 1
+
+            ratio = primes / total
+
+            if ratio < 0.1:
+                side_length = layer * 2 + 1
+                return side_length, ratio
+
+
+@euler_solution
+def euler60(bound=10000):
+    '''
+    The primes 3, 7, 109, and 673, are quite remarkable. By taking any two
+    primes and concatenating them in any order the result will always be prime.
+    For example, taking 7 and 109, both 7109 and 1097 are prime. The sum of
+    these four primes, 792, represents the lowest sum for a set of four primes
+    with this property.
+
+    Find the lowest sum for a set of five primes for which any two primes
+    concatenate to produce another prime.
+    '''
+    def valid(nums):
+        '''
+        Check that all primes in a set concatenate with one another
+        to form new primes.
+        '''
+        return all(
+            probably_prime(int(str(a)+str(b)))
+            for a, b in itools.permutations(nums, 2)
+        )
+
+    candidates = {}
+
+    # Find pairs of primes that work
+    primes = list(primes_to_n(bound))
+
+    for ix, p in enumerate(primes):
+        pairs = []
+        for q in primes[ix:]:
+            if probably_prime(int(str(p) + str(q))):
+                pairs.append(q)
+
+        candidates[p] = set(pairs)
+
+    for k, pairs in candidates.items():
+        for p in sorted(pairs):
+            triples = pairs.intersection(candidates[p])
+            for q in sorted(triples):
+                if not valid([k, p, q]):
+                    continue
+
+                quadruples = triples.intersection(candidates[q])
+                for r in sorted(quadruples):
+                    if not valid([k, p, q, r]):
+                        continue
+
+                    print(f'Found quartet: {[k, p, q, r]}')
+
+                    quintuples = quadruples.intersection(candidates[r])
+                    for s in sorted(quintuples):
+                        nums = [k, p, q, r, s]
+                        if valid(nums):
+                            return nums, sum(nums)
+    print('No candidate found')
+
+
+@euler_solution
+def euler62(seed=1, target=5):
+    '''
+    The cube, 41063625 (345^3), can be permuted to produce two other cubes:
+    56623104 (384^3) and 66430125 (405^3).In fact, 41063625 is the smallest
+    cube which has exactly three permutations of its digits which are also
+    cube.
+
+    Find the smallest cube for which exactly five permutations of its digits
+    are cube.
+    '''
+    def all_cubes(seed):
+        k = seed
+        yield k ** 3
+        while True:
+            k += 1
+            yield k ** 3
+
+    perms = defaultdict(list)
+    max_perms = 1
+    required_digits = None
+
+    for c in all_cubes(seed):
+        digits = tuple(sorted(str(c)))
+        if required_digits is not None:
+            if len(digits) > required_digits:
+                # We have the minimum by now
+                break
+
+        perms[digits].append(c)
+
+        if len(perms[digits]) > max_perms:
+            max_perms = len(perms[digits])
+
+            if max_perms == target:
+                required_digits = len(digits)
+
+    return min([min(v) for v in perms.values() if len(v) == target])
